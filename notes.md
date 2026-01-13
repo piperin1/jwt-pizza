@@ -6,21 +6,21 @@ As part of `Deliverable ⓵ Development deployment: JWT Pizza`, start up the app
 
 | User activity                                       | Frontend component | Backend endpoints | Database SQL |
 | --------------------------------------------------- | ------------------ | ----------------- | ------------ |
-| View home page                                      |     home.tsx       |      _none_         |     _none_     |
-| Register new user<br/>(t@jwt.com, pw: test)         |   register.tsx     |   [POST]/api/auth |      `INSERT INTO user (name, email, password) VALUES (?, ?, ?)` <br/>`INSERT INTO userRole (userId, role, objectId) VALUES (?, ?, ?)`        |
-| Login new user<br/>(t@jwt.com, pw: test)            |    login.tsx       |                   |              |
-| Order pizza                                         |menu.tsx, payment.tsx|                   |              |
+| View home page                                      |     home.tsx       |      _none_       |     _none_   |
+| Register new user<br/>(t@jwt.com, pw: test)         |   register.tsx     |   [POST]/api/auth |      `INSERT INTO user (name, email, password) VALUES (?, ?, ?)` <br/>`INSERT INTO userRole (userId, role, objectId) VALUES (?, ?, ?)`      |
+| Login new user<br/>(t@jwt.com, pw: test)            |    login.tsx       | [PUT]/api/auth    |              |
+| Order pizza                                         |menu.tsx, payment.tsx|                  |              |
 | Verify pizza                                        | delivery.tsx       |                   |              |
 | View profile page                                   | dinerDashboard.tsx |                   |              |
-| View franchise<br/>(as diner)                       |franchiseDashboard.tsx|                   |              |
-| Logout                                              |      logout.tsx    |                   |              |
+| View franchise<br/>(as diner)                       |franchiseDashboard.tsx|                 |              |
+| Logout                                              |      logout.tsx    |[DELETE]/api/auth  |              |
 | View About page                                     |    about.tsx       |                   |              |
 | View History page                                   |    history.tsx     |                   |              |
-| Login as franchisee<br/>(f@jwt.com, pw: franchisee) |     login.tsx      |                   |              |
-| View franchise<br/>(as franchisee)                  |franchiseDashboard.tsx|                   |              |
-| Create a store                                      |  createStore.tsx   |                   |              |
-| Close a store                                       |  closeStore.tsx    |                   |              |
-| Login as admin<br/>(a@jwt.com, pw: admin)           |  login.tsx         |                   |              |
+| Login as franchisee<br/>(f@jwt.com, pw: franchisee) |     login.tsx      | [PUT]/api/auth    |              |
+| View franchise<br/>(as franchisee)                  |franchiseDashboard.tsx|                 |              |
+| Create a store                                      |  createStore.tsx   |[POST]/api/franchise/${franchise.id}/store|              |
+| Close a store                                       |  closeStore.tsx    |[DELETE]/api/franchise/${franchise.id}/store/${store.id}|              |
+| Login as admin<br/>(a@jwt.com, pw: admin)           |  login.tsx         | [PUT]/api/auth    |              |
 | View Admin page                                     | adminDashboard.tsx |                   |              |
-| Create a franchise for t@jwt.com                    |createFranchise.tsx |                   |              |
-| Close the franchise for t@jwt.com                   |closeFranchise.tsx  |                   |              |
+| Create a franchise for t@jwt.com                    |createFranchise.tsx |[POST]/api/franchise|              |
+| Close the franchise for t@jwt.com                   |closeFranchise.tsx  |[DELET]/api/franchise|              |
