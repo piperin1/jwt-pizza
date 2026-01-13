@@ -14,13 +14,13 @@ As part of `Deliverable ⓵ Development deployment: JWT Pizza`, start up the app
 | View profile page                                   | dinerDashboard.tsx | /api/order        |              |
 | View franchise<br/>(as diner)                       |franchiseDashboard.tsx|/api/franchise/${user.id}|              |
 | Logout                                              |      logout.tsx    |[DELETE]/api/auth  |              |
-| View About page                                     |    about.tsx       | _none_             |              |
-| View History page                                   |    history.tsx     | _none_            |              |
+| View About page                                     |    about.tsx       | _none_             |   _none_           |
+| View History page                                   |    history.tsx     | _none_            |    _none_          |
 | Login as franchisee<br/>(f@jwt.com, pw: franchisee) |     login.tsx      | [PUT]/api/auth    |              |
 | View franchise<br/>(as franchisee)                  |franchiseDashboard.tsx|/api/franchise/${user.id}|      |
 | Create a store                                      |  createStore.tsx   |[POST]/api/franchise/${franchise.id}/store|              |
 | Close a store                                       |  closeStore.tsx    |[DELETE]/api/franchise/${franchise.id}/store/${store.id}|              |
 | Login as admin<br/>(a@jwt.com, pw: admin)           |  login.tsx         | [PUT]/api/auth    |              |
 | View Admin page                                     | adminDashboard.tsx |/api/franchise/${user.id}|              |
-| Create a franchise for t@jwt.com                    |createFranchise.tsx |[POST]/api/franchise| `SELECT id, name FROM user WHERE email=? INSERT INTO franchise (name) VALUES (?) INSERT INTO userRole (userId, role, objectId) VALUES (?, ?, ?)`             |
-| Close the franchise for t@jwt.com                   |closeFranchise.tsx  |[DELETE]/api/franchise| `DELETE FROM store WHERE franchiseId=? DELETE FROM userRole WHERE objectId=? DELETE FROM franchise WHERE id=?`|
+| Create a franchise for t@jwt.com                    |createFranchise.tsx |[POST]/api/franchise| `SELECT id, name FROM user WHERE email=?`</br> `INSERT INTO franchise (name) VALUES (?)` </br>`INSERT INTO userRole (userId, role, objectId) VALUES (?, ?, ?)`             |
+| Close the franchise for t@jwt.com                   |closeFranchise.tsx  |[DELETE]/api/franchise| `DELETE FROM store WHERE franchiseId=?` </br>`DELETE FROM userRole WHERE objectId=?` </br>`DELETE FROM franchise WHERE id=?`|
