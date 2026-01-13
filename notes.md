@@ -9,8 +9,8 @@ As part of `Deliverable ⓵ Development deployment: JWT Pizza`, start up the app
 | View home page                                      |     home.tsx       |      _none_       |     _none_   |
 | Register new user<br/>(t@jwt.com, pw: test)         |   register.tsx     |   [POST]/api/auth |      `INSERT INTO user (name, email, password) VALUES (?, ?, ?)` <br/>`INSERT INTO userRole (userId, role, objectId) VALUES (?, ?, ?)`      |
 | Login new user<br/>(t@jwt.com, pw: test)            |    login.tsx       | [PUT]/api/auth    |              |
-| Order pizza                                         |menu.tsx, payment.tsx|                  |              |
-| Verify pizza                                        | delivery.tsx       |                   |              |
+| Order pizza                                         |menu.tsx, payment.tsx|/api/order/menu , [POST]/api/order|              |
+| Verify pizza                                        | delivery.tsx       |[POST]/api/order/verify|              |
 | View profile page                                   | dinerDashboard.tsx |                   |              |
 | View franchise<br/>(as diner)                       |franchiseDashboard.tsx|                 |              |
 | Logout                                              |      logout.tsx    |[DELETE]/api/auth  |              |
@@ -23,4 +23,4 @@ As part of `Deliverable ⓵ Development deployment: JWT Pizza`, start up the app
 | Login as admin<br/>(a@jwt.com, pw: admin)           |  login.tsx         | [PUT]/api/auth    |              |
 | View Admin page                                     | adminDashboard.tsx |                   |              |
 | Create a franchise for t@jwt.com                    |createFranchise.tsx |[POST]/api/franchise|              |
-| Close the franchise for t@jwt.com                   |closeFranchise.tsx  |[DELET]/api/franchise|              |
+| Close the franchise for t@jwt.com                   |closeFranchise.tsx  |[DELETE]/api/franchise|              |
