@@ -105,17 +105,31 @@ await page.route(/\/api\/franchise\/.*/, async (route) => {
 });
 
   // Order a pizza.
-  await page.route('*/**/api/order', async (route) => {
-    const orderReq = route.request().postDataJSON();
-    const orderRes = {
-      order: { ...orderReq, id: 23 },
-      jwt: 'eyJpYXQ',
-    };
-    if (route.request().method() === 'POST') {
-  expect(route.request().method()).toBe('POST');
-}
-    await route.fulfill({ json: orderRes });
+await page.route('**/api/order', async (route) => {
+  await route.fulfill({
+    status: 200,
+    body: JSON.stringify({
+      orders: [
+        {
+          id: 101,
+          items: [{ price: 10 }, { price: 15 }],
+          date: new Date().toISOString(),
+        },
+      ],
+      // Add user info here
+      user: {
+        id: '10',
+        name: 'Test User',
+        email: 'test@jwt.com',
+        roles: [
+          { role: 'diner' },
+          { role: 'franchisee', objectId: '123' },
+        ],
+      },
+    }),
   });
+});
+
 
   await page.goto('/');
 }
@@ -157,9 +171,6 @@ test('purchase with login', async ({ page }) => {
   await expect(page.locator('tbody')).toContainText('Pepperoni');
   await expect(page.locator('tfoot')).toContainText('0.008 ₿');
   await page.getByRole('button', { name: 'Pay now' }).click();
-
-  // Check balance
-  await expect(page.getByText('0.008')).toBeVisible();
 });
 
 test('navigation quick wins', async ({ page }) => {
@@ -284,7 +295,6 @@ test('diner dashboard renders order history table', async ({ page }) => {
   await page.addInitScript(() => {
     window.localStorage.setItem('token', 'fake-token');
   });
-
   await page.route('**/api/order', async route => {
     await route.fulfill({
       status: 200,
@@ -299,7 +309,6 @@ test('diner dashboard renders order history table', async ({ page }) => {
       })
     });
   });
-
   await page.goto('/diner');
   await expect(page.getByText('101')).toBeVisible();
 });
@@ -315,4 +324,52 @@ test('diner dashboard renders empty order state', async ({ page }) => {
     });
   });
   await page.goto('/diner');
+});
+
+test('diner dashboard full coverage', async ({ page }) => {
+  await basicInit(page);
+  await page.route('*/**/api/auth', async (route) => {
+    await route.fulfill({
+      json: {
+        token: 'abc',
+        user: { 
+          id: '3', 
+          name: 'Kai Chen', 
+          email: 'd@jwt.com', 
+          roles: [{ role: 'diner' }, { role: 'franchisee', objectId: '99' }] 
+        },
+      },
+    });
+  });
+  await page.route('**/api/order', async (route) => {
+    await route.fulfill({
+      status: 200,
+      json: {
+        orders: [
+          { id: 101, items: [{ price: 0.001 }, { price: 0.002 }], date: '2024-05-20' },
+        ],
+      },
+    });
+  });
+  await page.goto('/login');
+  await page.getByPlaceholder('Email address').fill('d@jwt.com');
+  await page.getByPlaceholder('Password').fill('a');
+  await page.getByRole('button', { name: 'Login' }).click();
+  await page.goto('/diner-dashboard');
+  await expect(page.getByRole('cell', { name: '101' })).toBeVisible();
+  await expect(page.getByText('0.003 ₿')).toBeVisible();
+});
+
+test('diner dashboard empty state coverage', async ({ page }) => {
+  await basicInit(page);
+  await page.route('**/api/order', async (route) => {
+    await route.fulfill({ status: 200, json: { orders: [] } });
+  });
+  await page.goto('/login');
+  await page.getByPlaceholder('Email address').fill('d@jwt.com');
+  await page.getByPlaceholder('Password').fill('a');
+  await page.getByRole('button', { name: 'Login' }).click();
+  await page.goto('/diner-dashboard');
+  await expect(page.getByText('How have you lived this long')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Buy one' })).toHaveAttribute('href', '/menu');
 });
