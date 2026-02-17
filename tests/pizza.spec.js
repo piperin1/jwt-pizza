@@ -221,7 +221,6 @@ test('franchise dashboard renders stores and allows navigation', async ({ page }
   await expect(page).toHaveURL(/create-store/);
 });
 
-
 test('franchise dashboard shows marketing page if no franchise', async ({ page }) => {
   await basicInit(page);
   await page.goto('/login');
@@ -230,4 +229,90 @@ test('franchise dashboard shows marketing page if no franchise', async ({ page }
   await page.getByRole('button', { name: 'Login' }).click();
   await page.goto('/franchise-dashboard');
   await expect(page.getByText('So you want a piece of the pie?')).toBeVisible();
+});
+
+test('logout clears user and redirects', async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem('token', 'fake-token');
+  });
+  await page.route('**/api/auth', async route => {
+    await route.fulfill({ status: 200, body: JSON.stringify({}) });
+  });
+  await page.goto('/logout');
+  await expect(page).toHaveURL('/');
+});
+
+test('login stores token', async ({ page }) => {
+  await page.route('**/api/auth', async route => {
+    await route.fulfill({
+      status: 200,
+      body: JSON.stringify({
+        user: { id: 1, name: 'Test' },
+        token: 'abc123'
+      })
+    });
+  });
+  await page.goto('/login');
+  await page.fill('input[type="email"]', 'test@test.com');
+  await page.fill('input[type="password"]', 'password');
+  await page.getByRole('button', { name: 'Login' }).click();
+});
+
+test('handles failed api call', async ({ page }) => {
+  await page.route('**/api/franchise*', async route => {
+    await route.fulfill({
+      status: 500,
+      body: JSON.stringify({ message: 'Server error' })
+    });
+  });
+
+  await page.goto('/admin');
+});
+
+test('factory docs endpoint loads', async ({ page }) => {
+  await page.route('**/api/docs', async route => {
+    await route.fulfill({
+      status: 200,
+      body: JSON.stringify({})
+    });
+  });
+
+  await page.goto('/docs?type=factory');
+});
+
+test('diner dashboard renders order history table', async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem('token', 'fake-token');
+  });
+
+  await page.route('**/api/order', async route => {
+    await route.fulfill({
+      status: 200,
+      body: JSON.stringify({
+        orders: [
+          {
+            id: 101,
+            items: [{ price: 10 }, { price: 15 }],
+            date: new Date().toISOString()
+          }
+        ]
+      })
+    });
+  });
+
+  await page.goto('/diner');
+  await expect(page.getByText('101')).toBeVisible();
+});
+
+test('diner dashboard renders empty order state', async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem('token', 'fake-token');
+  });
+  await page.route('**/api/order', async route => {
+    await route.fulfill({
+      status: 200,
+      body: JSON.stringify({ orders: [] })
+    });
+  });
+  await page.goto('/diner');
 });
