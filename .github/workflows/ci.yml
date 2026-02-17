@@ -51,9 +51,10 @@ jobs:
             echo "ERROR: Coverage $coverage% is below 80%"
             exit 1
           fi
-          curl -s -X POST "https://pizza-factory.cs329.click/api/badge/jwtpizzacoverage" \
-          -H "authorization: bearer ${{ secrets.FACTORY_API_KEY }}" \
-          -d "{\"label\":\"Coverage\", \"value\":\"$coverage%\", \"color\":\"$color\"}"
+          curl -X POST "https://pizza-factory.cs329.click/api/badge/${{ secrets.NET_ID }}/jwtpizzacoverage" \
+            -H "Authorization: Bearer ${{ secrets.FACTORY_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"label\": \"Coverage\", \"value\": \"$coverage%\", \"color\": \"$color\"}"
   deploy:
     needs: build
     permissions:
