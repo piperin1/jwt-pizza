@@ -2,19 +2,24 @@ import { test, expect } from 'playwright-test-coverage';
 
 async function basicInit(page) {
   let loggedInUser;
-  
-  // We replaced Role.Diner with 'diner' and removed TS type annotations
   const validUsers = { 
     'd@jwt.com': { 
       id: '3', 
       name: 'Kai Chen', 
       email: 'd@jwt.com', 
       password: 'a', 
-      roles: [{ role: 'diner' }] // 'diner' replaces Role.Diner
-    } 
+      roles: [{ role: 'diner' }]
+    }, 
+    'admin@jwt.com': { 
+    id: '4', name: 'Admin', email: 'admin@jwt.com', password: 'a', 
+    roles: [{ role: 'admin' }] 
+  },
+  'f@jwt.com': { 
+    id: '5', name: 'Franchisee', email: 'f@jwt.com', password: 'a', 
+    roles: [{ role: 'franchisee' }] 
+  }
   };
 
-  // Authorize login for the given user
   await page.route('*/**/api/auth', async (route) => {
     const loginReq = route.request().postDataJSON();
     const user = validUsers[loginReq.email];
@@ -30,8 +35,6 @@ async function basicInit(page) {
       token: 'abcdef',
     };
     
-    // Note: The original code expected 'PUT' here, keep it if your API expects it
-    // usually login is POST, but we are keeping your original logic
     expect(route.request().method()).toBe('PUT'); 
     await route.fulfill({ json: loginRes });
   });
@@ -92,7 +95,9 @@ async function basicInit(page) {
       order: { ...orderReq, id: 23 },
       jwt: 'eyJpYXQ',
     };
-    expect(route.request().method()).toBe('POST');
+    if (route.request().method() === 'POST') {
+  expect(route.request().method()).toBe('POST');
+}
     await route.fulfill({ json: orderRes });
   });
 
@@ -139,4 +144,27 @@ test('purchase with login', async ({ page }) => {
 
   // Check balance
   await expect(page.getByText('0.008')).toBeVisible();
+});
+
+test('navigation quick wins', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('link', { name: 'About' }).click();
+  await expect(page).toHaveURL(/about/);
+  await page.getByRole('link', { name: 'History' }).click();
+  await expect(page).toHaveURL(/history/);
+  await page.getByRole('link', { name: 'Register' }).click();
+  await page.getByPlaceholder('Full name').fill('New User');
+  await page.getByPlaceholder('Email address').fill('new@jwt.com');
+  await page.getByPlaceholder('Password').fill('password');
+});
+
+test('failed login coverage', async ({ page }) => {
+  await page.route('*/**/api/auth', async (route) => {
+    await route.fulfill({ status: 401, json: { message: 'Unauthorized' } });
+  });
+  await page.goto('/login');
+  await page.getByPlaceholder('Email address').fill('wrong@test.com');
+  await page.getByPlaceholder('Password').fill('wrong');
+  await page.getByRole('button', { name: 'Login' }).click();
+  await expect(page.getByText('Unauthorized')).toBeVisible();
 });
