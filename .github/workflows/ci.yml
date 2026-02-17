@@ -54,7 +54,7 @@ jobs:
           curl -X POST "https://pizza-factory.cs329.click/api/badge/${{ secrets.NET_ID }}/jwtpizzacoverage" \
             -H "Authorization: Bearer ${{ secrets.FACTORY_API_KEY }}" \
             -H "Content-Type: application/json" \
-            -d "{\"label\": \"Coverage\", \"value\": \"$coverage%25\", \"color\": \"$color\"}"
+            -d "{\"label\": \"Coverage\", \"value\": $coverage, \"color\": \"$color\"}"
   deploy:
     needs: build
     permissions:
