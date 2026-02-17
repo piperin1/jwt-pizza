@@ -83,10 +83,26 @@ async function basicInit(page) {
         { id: 3, name: 'PizzaCorp', stores: [{ id: 7, name: 'Spanish Fork' }] },
         { id: 4, name: 'topSpot', stores: [] },
       ],
+      more:true
     };
     expect(route.request().method()).toBe('GET');
     await route.fulfill({ json: franchiseRes });
   });
+
+await page.route(/\/api\/franchise\/.*/, async (route) => {
+  await route.fulfill({
+    json: [
+      {
+        id: 10,
+        name: 'Franchisee Pizza',
+        stores: [
+          { id: 1, name: 'Downtown', totalRevenue: 100 },
+          { id: 2, name: 'Uptown', totalRevenue: 200 },
+        ],
+      },
+    ],
+  });
+});
 
   // Order a pizza.
   await page.route('*/**/api/order', async (route) => {
@@ -167,4 +183,51 @@ test('failed login coverage', async ({ page }) => {
   await page.getByPlaceholder('Password').fill('wrong');
   await page.getByRole('button', { name: 'Login' }).click();
   await expect(page.getByText('Unauthorized')).toBeVisible();
+});
+
+test('admin dashboard renders franchises and actions', async ({ page }) => {
+  await basicInit(page);
+  await page.goto('/login');
+  await page.getByPlaceholder('Email address').fill('admin@jwt.com');
+  await page.getByPlaceholder('Password').fill('a');
+  await page.getByRole('button', { name: 'Login' }).click();
+  await page.goto('/admin-dashboard');
+  await expect(page.getByText('Franchises')).toBeVisible();
+await expect(
+  page.getByRole('columnheader', { name: 'Franchise', exact: true })
+).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Close' }).first()).toBeVisible();
+  await page.getByPlaceholder('Filter franchises').fill('Lota');
+  await page.getByRole('button', { name: 'Submit' }).click();
+  await page.getByRole('button', { name: '»' }).click();
+  await page.getByRole('button', { name: '«' }).click();
+  await page.getByRole('button', { name: 'Add Franchise' }).click();
+  await expect(page).toHaveURL(/create-franchise/);
+});
+
+test('franchise dashboard renders stores and allows navigation', async ({ page }) => {
+  await basicInit(page);
+  await page.goto('/login');
+  await page.getByPlaceholder('Email address').fill('f@jwt.com');
+  await page.getByPlaceholder('Password').fill('a');
+  await page.getByRole('button', { name: 'Login' }).click();
+  await page.goto('/franchise-dashboard');
+  await expect(page.getByText('Downtown')).toBeVisible();
+  await expect(
+    page.getByRole('columnheader', { name: 'Name', exact: true })
+  ).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Close' }).first()).toBeVisible();
+  await page.getByRole('button', { name: 'Create store' }).click();
+  await expect(page).toHaveURL(/create-store/);
+});
+
+
+test('franchise dashboard shows marketing page if no franchise', async ({ page }) => {
+  await basicInit(page);
+  await page.goto('/login');
+  await page.getByPlaceholder('Email address').fill('d@jwt.com');
+  await page.getByPlaceholder('Password').fill('a');
+  await page.getByRole('button', { name: 'Login' }).click();
+  await page.goto('/franchise-dashboard');
+  await expect(page.getByText('So you want a piece of the pie?')).toBeVisible();
 });
