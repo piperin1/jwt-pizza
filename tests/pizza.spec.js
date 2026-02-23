@@ -486,3 +486,4 @@ test('admin can close user dialog', async ({ page }) => {
 
   await expect(page.getByText('User Management')).toBeVisible();
 });
+

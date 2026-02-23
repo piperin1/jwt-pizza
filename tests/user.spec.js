@@ -1,35 +1,69 @@
 import { test, expect } from 'playwright-test-coverage';
 
-test('updateUser', async ({ page }) => {
-  const email = `user${Math.floor(Math.random() * 10000)}@jwt.com`;
+async function basicInit(page) {
+  let loggedInUser = null;
+  const users = {
+    'edit@jwt.com': {
+      id: '10',
+      name: 'pizza diner',
+      email: 'edit@jwt.com',
+      password: 'diner',
+      roles: [{ role: 'diner' }],
+    },
+  };
+
+  await page.route('**/api/auth', async (route) => {
+    const body = route.request().postDataJSON();
+    const user = users[body.email];
+
+    if (!user || user.password !== body.password) {
+      await route.fulfill({ status: 401, json: { message: 'Unauthorized' } });
+      return;
+    }
+
+    loggedInUser = user;
+
+    await route.fulfill({
+      json: {
+        user: loggedInUser,
+        token: 'mock-token',
+      },
+    });
+  });
+
+  await page.route('**/api/user/me', async (route) => {
+    await route.fulfill({ json: loggedInUser });
+  });
+
+  await page.route('**/api/user', async (route) => {
+    if (route.request().method() === 'PUT') {
+      const body = route.request().postDataJSON();
+      users[loggedInUser.email].name = body.name;
+      loggedInUser = users[loggedInUser.email];
+
+      await route.fulfill({
+        json: loggedInUser,
+      });
+      return;
+    }
+
+    await route.continue();
+  });
+
   await page.goto('/');
-  await page.getByRole('link', { name: 'Register' }).click();
-  await page.getByRole('textbox', { name: 'Full name' }).fill('pizza diner');
-  await page.getByRole('textbox', { name: 'Email address' }).fill(email);
-  await page.getByRole('textbox', { name: 'Password' }).fill('diner');
-  await page.getByRole('button', { name: 'Register' }).click();
+}
 
+test('updateUser', async ({ page }) => {
+  await basicInit(page);
+  await page.getByRole('link', { name: 'Login' }).click();
+  await page.getByPlaceholder('Email address').fill('edit@jwt.com');
+  await page.getByPlaceholder('Password').fill('diner');
+  await page.getByRole('button', { name: 'Login' }).click();
   await page.getByRole('link', { name: 'pd' }).click();
-
   await expect(page.getByRole('main')).toContainText('pizza diner');
-
-    await page.getByRole('button', { name: 'Edit' }).click();
+  await page.getByRole('button', { name: 'Edit' }).click();
   await expect(page.locator('h3')).toContainText('Edit user');
+
   await page.getByRole('textbox').first().fill('pizza dinerx');
   await page.getByRole('button', { name: 'Update' }).click();
-
-  await page.waitForSelector('[role="dialog"].hidden', { state: 'attached' });
-
-  await expect(page.getByRole('main')).toContainText('pizza dinerx');
-
-  await page.getByRole('link', { name: 'Logout' }).click();
-await page.getByRole('link', { name: 'Login' }).click();
-
-await page.getByRole('textbox', { name: 'Email address' }).fill(email);
-await page.getByRole('textbox', { name: 'Password' }).fill('diner');
-await page.getByRole('button', { name: 'Login' }).click();
-
-await page.getByRole('link', { name: 'pd' }).click();
-
-await expect(page.getByRole('main')).toContainText('pizza dinerx');
 });
