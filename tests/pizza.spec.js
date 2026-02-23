@@ -487,3 +487,17 @@ test('admin can close user dialog', async ({ page }) => {
   await expect(page.getByText('User Management')).toBeVisible();
 });
 
+test('close franchise page renders', async ({ page }) => {
+  await basicInit(page);
+
+  await page.goto('/admin-dashboard/close-franchise', {
+    state: { franchise: { id: 1, name: 'Test' } }
+  });
+});
+
+test('delivery page renders', async ({ page }) => {
+  await basicInit(page);
+  await page.goto('/delivery');
+  await expect(page.getByRole('main')).toBeVisible();
+});
+
