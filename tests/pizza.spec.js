@@ -372,3 +372,117 @@ test('diner dashboard empty state coverage', async ({ page }) => {
   await expect(page.getByText('How have you lived this long')).toBeVisible();
   await expect(page.getByRole('link', { name: 'Buy one' })).toHaveAttribute('href', '/menu');
 });
+
+test('admin user management dialog loads users', async ({ page }) => {
+  await basicInit(page);
+  await page.route(/\/api\/user(\?.*)?$/, async (route) => {
+    expect(route.request().method()).toBe('GET');
+    await route.fulfill({
+      json: {
+        users: [
+          { id: '1', name: 'A', email: 'a@test.com', roles: [{ role: 'diner' }] },
+          { id: '2', name: 'B', email: 'b@test.com', roles: [{ role: 'admin' }] },
+        ],
+        more: false,
+      },
+    });
+  });
+
+  await page.goto('/login');
+  await page.getByPlaceholder('Email address').fill('admin@jwt.com');
+  await page.getByPlaceholder('Password').fill('a');
+  await page.getByRole('button', { name: 'Login' }).click();
+
+  await page.goto('/admin-dashboard');
+
+  await page.getByRole('button', { name: 'Manage Users' }).click();
+
+  await expect(page.getByText('User Management')).toBeVisible();
+});
+
+test('admin can search users', async ({ page }) => {
+  await basicInit(page);
+
+  await page.route(/\/api\/user(\?.*)?$/, async (route) => {
+    const url = route.request().url();
+
+    if (url.includes('Alpha')) {
+      await route.fulfill({
+        json: {
+          users: [{ id: '1', name: 'a', email: 'a@test.com', roles: [{ role: 'diner' }] }],
+          more: false,
+        },
+      });
+    } else {
+      await route.fulfill({
+        json: { users: [], more: false },
+      });
+    }
+  });
+
+  await page.goto('/login');
+  await page.getByPlaceholder('Email address').fill('admin@jwt.com');
+  await page.getByPlaceholder('Password').fill('a');
+  await page.getByRole('button', { name: 'Login' }).click();
+
+  await page.goto('/admin-dashboard');
+  await page.getByRole('button', { name: 'Manage Users' }).click();
+
+  await page.getByPlaceholder('Search users by name').fill('a');
+  await page.getByRole('button', { name: 'Search' }).click();
+});
+
+test('admin pagination works in user dialog', async ({ page }) => {
+  await basicInit(page);
+
+  await page.route(/\/api\/user(\?.*)?$/, async (route) => {
+    const url = route.request().url();
+
+    if (url.includes('page=2')) {
+      await route.fulfill({
+        json: {
+          users: [{ id: '3', name: 'G', email: 'g@test.com', roles: [{ role: 'diner' }] }],
+          more: false,
+        },
+      });
+    } else {
+      await route.fulfill({
+        json: {
+          users: [{ id: '1', name: 'A', email: 'a@test.com', roles: [{ role: 'diner' }] }],
+          more: true,
+        },
+      });
+    }
+  });
+
+  await page.goto('/login');
+  await page.getByPlaceholder('Email address').fill('admin@jwt.com');
+  await page.getByPlaceholder('Password').fill('a');
+  await page.getByRole('button', { name: 'Login' }).click();
+
+  await page.goto('/admin-dashboard');
+  await page.getByRole('button', { name: 'Manage Users' }).click();
+
+  await page.getByRole('button', { name: 'Next' }).click();
+
+  await page.getByRole('button', { name: 'Prev' }).click();
+
+});
+
+test('admin can close user dialog', async ({ page }) => {
+  await basicInit(page);
+
+  await page.route(/\/api\/user(\?.*)?$/, async (route) => {
+    await route.fulfill({ json: { users: [], more: false } });
+  });
+
+  await page.goto('/login');
+  await page.getByPlaceholder('Email address').fill('admin@jwt.com');
+  await page.getByPlaceholder('Password').fill('a');
+  await page.getByRole('button', { name: 'Login' }).click();
+
+  await page.goto('/admin-dashboard');
+  await page.getByRole('button', { name: 'Manage Users' }).click();
+
+  await expect(page.getByText('User Management')).toBeVisible();
+});

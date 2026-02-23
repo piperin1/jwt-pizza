@@ -16,12 +16,25 @@ export default function AdminDashboard(props: Props) {
   const [franchiseList, setFranchiseList] = React.useState<FranchiseList>({ franchises: [], more: false });
   const [franchisePage, setFranchisePage] = React.useState(0);
   const filterFranchiseRef = React.useRef<HTMLInputElement>(null);
+  const [showUserDialog, setShowUserDialog] = React.useState(false);
+  const [userList, setUserList] = React.useState<{ users: User[]; more: boolean }>({ users: [], more: false });
+  const [userPage, setUserPage] = React.useState(1);
+  const userFilterRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
     (async () => {
       setFranchiseList(await pizzaService.getFranchises(franchisePage, 3, '*'));
     })();
   }, [props.user, franchisePage]);
+
+  React.useEffect(() => {
+  if (!showUserDialog) return;
+
+  (async () => {
+    const result = await pizzaService.getUsers(userPage, 10, userFilterRef.current?.value || '');
+    setUserList(result);
+  })();
+  }, [showUserDialog, userPage]);
 
   function createFranchise() {
     navigate('/admin-dashboard/create-franchise');
@@ -38,6 +51,21 @@ export default function AdminDashboard(props: Props) {
   async function filterFranchises() {
     setFranchiseList(await pizzaService.getFranchises(franchisePage, 10, `*${filterFranchiseRef.current?.value}*`));
   }
+
+  async function deleteUser(user: User) {
+  if (!user.id) return;
+
+  await pizzaService.deleteUser(user.id);
+  const result = await pizzaService.getUsers(userPage, 10, userFilterRef.current?.value || '');
+  setUserList(result);
+}
+
+async function searchUsers() {
+  setUserPage(1); 
+  const filterValue = userFilterRef.current?.value || '';
+  const result = await pizzaService.getUsers(1, 10, filterValue);
+  setUserList(result);
+}
 
   let response = <NotFound />;
   if (Role.isRole(props.user, Role.Admin)) {
@@ -122,7 +150,103 @@ export default function AdminDashboard(props: Props) {
         </div>
         <div>
           <Button className="w-36 text-xs sm:text-sm sm:w-64" title="Add Franchise" onPress={createFranchise} />
+          <Button
+            className="w-36 text-xs sm:text-sm sm:w-64 mt-4"
+            title="Manage Users"
+            onPress={() => setShowUserDialog(true)}
+          />
         </div>
+        {showUserDialog && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <div className="bg-white w-3/4 max-h-[80vh] overflow-auto rounded-lg p-6 shadow-lg">
+              
+              <h2 className="text-xl font-bold mb-4">User Management</h2>
+
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-slate-400 text-white">
+                  <tr>
+                    <th className="px-4 py-2">Name</th>
+                    <th className="px-4 py-2">Email</th>
+                    <th className="px-4 py-2">Role</th>
+                    <th className="px-4 py-2">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {userList.users.map((user, index) => (
+                    <tr key={index} className="border-t">
+                      <td className="px-4 py-2">{user.name}</td>
+                      <td className="px-4 py-2">{user.email}</td>
+                      <td className="px-4 py-2">
+                        {user.roles?.map(r => r.role).join(', ')}
+                      </td>
+                      <td className="px-4 py-2 text-center">
+                        <button
+                          className="text-red-500 hover:text-red-700"
+                          onClick={() => deleteUser(user)}
+                        >
+                          <TrashIcon />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <div className="flex justify-between mt-4">
+                <div className="mb-4 flex gap-2">
+                  <input
+                    type="text"
+                    ref={userFilterRef}
+                    placeholder="Search users by name"
+                    className="px-2 py-1 border border-gray-300 rounded-lg flex-grow"
+                  />
+                  <button
+                    className="px-3 py-1 bg-orange-400 text-white rounded hover:bg-orange-600"
+                    onClick={() => searchUsers()}
+                  >
+                    Search
+                  </button>
+                </div>
+                <button
+                  disabled={userPage <= 1}
+                  onClick={async () => {
+                    const filterValue = userFilterRef.current?.value || '';
+                    const prevPage = userPage - 1;
+                    const result = await pizzaService.getUsers(prevPage, 10, filterValue);
+                    setUserList(result);
+                    setUserPage(prevPage);
+                  }}
+                  className="px-4 py-1 border rounded disabled:bg-gray-200"
+                >
+                  Prev
+                </button>
+
+                <button
+                  disabled={!userList.more}
+                  onClick={async () => {
+                    const filterValue = userFilterRef.current?.value || '';
+                    const nextPage = userPage + 1;
+                    const result = await pizzaService.getUsers(nextPage, 10, filterValue);
+                    setUserList(result);
+                    setUserPage(nextPage);
+                  }}
+                  className="px-4 py-1 border rounded disabled:bg-gray-200"
+                >
+                  Next
+                </button>
+              </div>
+
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={() => setShowUserDialog(false)}
+                  className="px-4 py-2 bg-gray-300 rounded"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </View>
     );
   }
