@@ -114,9 +114,9 @@ ___
 | Target        | https://pizza.simicninja.click |
 | Classification| Cross-site Scripting (XSS)|
 | Severity      | 0 |
-| Description   |  |
-| Images        |  |   
-| Corrections   |  |
+| Description   | Attempted manual cross-site scripting attacks via the franchise store creation page. This failed, and was one of the few places where user input was reflected on the application |
+| Images        | ![PED_failed_peer_xss](./imgs/ped_s6.png)  |   
+| Corrections   | None needed |
 
 |  Item         | Result  |
 |---------------|---------|        
@@ -124,19 +124,19 @@ ___
 | Target        | https://pizza.simicninja.click |
 | Classification| Injection |
 | Severity      | 0 |
-| Description   |  |
-| Images        |  |   
-| Corrections   |  |
+| Description   | DROP TABLE injection attack attempted. Application properly sanitized inputs and no data was affected |
+| Images        | ![PED_failed_peer_inj](./imgs/ped_s7.png)![PED_failed_peer_inj2](./imgs/ped_s7_2.png)  |   
+| Corrections   | None needed |
 
 |  Item         | Result  |
 |---------------|---------|        
 | Date          | April 14, 2026   |
 | Target        | https://pizza.simicninja.click |
 | Classification| Brute-force |
-| Severity      |  |
-| Description   |  |
-| Images        |  |   
-| Corrections   |  |
+| Severity      | 3 |
+| Description   | Access to administrator privileges granted through brute-force password attempts. User and franchise information now at risk |
+| Images        | ![PED_success_peer_bf](./imgs/ped_s8.png)  |   
+| Corrections   | Admin password should be adjusted to be more secure |
 
 |  Item         | Result  |
 |---------------|---------|        
@@ -159,3 +159,5 @@ ___
 | Corrections   |  |
 
 ### Owen Werts
+
+## Combined Summary of Learnings
