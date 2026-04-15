@@ -40,7 +40,7 @@ Participants: Piper Dickson, Owen Werts
 | Target        | https://pizza.piperin.click  |
 | Classification| Authentication Failure/Bypass  |
 | Severity      |  0 |
-| Description   | Auth token adjusted to include admin role for non-admin user |
+| Description   | Auth token adjusted to include admin role for non-admin user, attempted to access edit users function with this token|
 | Images        |  ![PED_failed_auth](./imgs/ped_s4.png)  |   
 | Corrections   |  None needed, authorization correctly denied even with admin role added |
 
@@ -143,20 +143,20 @@ ___
 | Date          | April 14, 2026   |
 | Target        | https://pizza.simicninja.click |
 | Classification| Indirect Object Reference  |
-| Severity      |  |
-| Description   |  |
-| Images        |  |   
-| Corrections   |  |
+| Severity      | 0 |
+| Description   | Modified token objectID to attempt to gain access to unauthorized franchise information. Request successfully denied, though via a 502 response. Attack failed. |
+| Images        | ![PED_failed_peer_idor](./imgs/ped_s9.png)  |   
+| Corrections   | (Optional) modify application so that unauthorized requests return a 401 or 403 error rather than 502 |
 
 |  Item         | Result  |
 |---------------|---------|        
 | Date          | April 14, 2026   |
 | Target        | https://pizza.simicninja.click |
 | Classification| Authentication Failure/Bypass |
-| Severity      |  |
-| Description   |  |
-| Images        |  |   
-| Corrections   |  |
+| Severity      | 1 |
+| Description   | Modified GET request for admin dashboard information to use diner token instead of admin token. Franchise information still returned despite improper permissions |
+| Images        | ![PED_success_peer_auth](./imgs/ped_s10.png) |   
+| Corrections   | Proper admin check should be performed to block requests from unauthorized users |
 
 ### Owen Werts
 
