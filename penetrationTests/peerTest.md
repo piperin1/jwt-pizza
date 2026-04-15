@@ -41,8 +41,8 @@ Participants: Piper Dickson, Owen Werts
 | Classification| Authentication Failure/Bypass  |
 | Severity      |  0 |
 | Description   | Auth token adjusted to include admin role for non-admin user |
-| Images        |   |   
-| Corrections   |  None needed, authorization correctly denied even with admin token |
+| Images        |  ![PED_failed_auth](./imgs/ped_s4.png)  |   
+| Corrections   |  None needed, authorization correctly denied even with admin role added |
 
 |  Item         | Result  |
 |---------------|---------|        
@@ -50,8 +50,8 @@ Participants: Piper Dickson, Owen Werts
 | Target        | https://pizza.piperin.click  |
 | Classification| Indirect Object Reference |
 | Severity      |  0 |
-| Description   |  Franchisee token adjusted to include data from non-owned franchises. Application successfully denied request |
-| Images        |   |   
+| Description   |  Franchisee token adjusted to include objectID from non-owned franchisee. Application successfully denied request |
+| Images        | ![PED_failed_idor](./imgs/ped_s5.png)  |   
 | Corrections   |  None needed |
 
 ### Owen Werts
